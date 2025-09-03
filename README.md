@@ -164,4 +164,4 @@ For support and questions:
 
 ---
 
-Built with ❤️ using React, TypeScript, and Vite
+Copyright 2025, ThoughtSpot Inc.
