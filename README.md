@@ -159,8 +159,7 @@ This client supports the Model Context Protocol, allowing you to:
 
 For support and questions:
 - Create an issue in the repository
-- Check the documentation
-- Contact the development team
+- Join the ThoughtSpot [Developer Discord](https://developers.thoughtspot.com/join-discord)
 
 ---
 
