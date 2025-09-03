@@ -4,15 +4,25 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
+	"keep_vars": true,
 	"name": "mcp-chat-client",
 	"main": "worker/index.ts",
 	"compatibility_date": "2025-09-02",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"assets": {
-		"not_found_handling": "single-page-application"
+		"not_found_handling": "single-page-application",
 	},
 	"observability": {
-		"enabled": true
-	}
+		"enabled": true,
+	},
+	"kv_namespaces": [
+		{
+			"binding": "MCP_CHAT_KV",
+			"id": "45952e1a80e941649a4c2dec3d4e140c"
+		}
+	],
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
