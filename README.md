@@ -15,13 +15,13 @@ A modern, feature-rich chat client built with React, TypeScript, and Vite that i
 - 📚 **Conversation History**: Persistent chat history and conversation management
 - 🎨 **Modern UI**: Beautiful, responsive interface built with modern design principles
 - 🔧 **MCP Server Management**: Add, configure, and manage multiple MCP servers
-- 📱 **Responsive Design**: Works seamlessly across desktop and mobile devices
 
 ## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: SCSS with modern CSS features
 - **Backend**: Cloudflare Workers
+- **Caching**: Cloudflare Workers KV
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
 - **State Management**: React Context + Custom Hooks
