@@ -2,6 +2,10 @@
 
 A modern, feature-rich chat client built with React, TypeScript, and Vite that integrates with Model Context Protocol (MCP) servers to provide intelligent AI-powered conversations with access to various tools and resources.
 
+## Demo
+
+[Chat app](https://chat.thoughtspot.app)
+
 ## Features
 
 - 🤖 **AI-Powered Chat**: Seamless integration with AI models through MCP servers
