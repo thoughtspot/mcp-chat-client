@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import ReactMarkdown from "react-markdown";
 import { getToolSummary } from "../../services/mcp";
 import "./tool-call-details-drawer.scss";
-import { Frame } from "../frame/frame";
+import rehypeRaw from "rehype-raw";
 
 interface ToolCallDetailsDrawerProps {
     visible: boolean;
@@ -225,7 +225,7 @@ export const ToolCallDetailsDrawer = ({
 			}
 
 			return cachedSummary.summary ? (
-				<ReactMarkdown>{cachedSummary.summary}</ReactMarkdown>
+				<ReactMarkdown rehypePlugins={[rehypeRaw]}>{cachedSummary.summary}</ReactMarkdown>
 			) : (
 				<div style={{ textAlign: 'center', padding: '40px 20px', color: '#666' }}>
 						No summary available
@@ -233,16 +233,8 @@ export const ToolCallDetailsDrawer = ({
 			)
 		}
 
-
-
-		const frameUrl = getFrameUrl(selectedToolCallDetails?.result);
-
 		return (
 			<Flex vertical gap={12}>
-				<Flex style={{ width: '100%', height: '600px' }}>
-					{frameUrl &&
-					<Frame src={frameUrl} width="100%" height="100%" />}
-				</Flex>
 				<Flex>
 					{getSummary()}
 				</Flex>
