@@ -1,9 +1,9 @@
 import { Button, Collapse, Dropdown, Flex, Switch, Skeleton, Typography, message, Spin, Tooltip } from "antd";
-import { EllipsisOutlined, PlusOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import { EllipsisOutlined, PlusOutlined } from "@ant-design/icons";
 import "./mcp-list.scss";
 import { useState, useEffect } from "react";
 import { AddMCPModal } from "./add-mcp-modal";
-import { listMCPServerTools, connectMCPServer } from "../../services/mcp";
+import { listMCPServerTools, connectMCPServer, deleteMCPServer } from "../../services/mcp";
 import type { MCPServerMetadata } from "../../../worker/backend/types";
 import { useMCPContext } from "../../contexts/mcp-context";
 
@@ -101,8 +101,10 @@ export const MCPList = () => {
 					items: [{
 						key: 'delete',
 						label: 'Delete',
-						disabled: true, // Disabled until delete functionality is implemented
-						onClick: () => message.info('Delete functionality coming soon')
+						onClick: async () => {
+							await deleteMCPServer(server.id);
+							fetchMCPServers();
+						}
 					}],
 				}}
 			>

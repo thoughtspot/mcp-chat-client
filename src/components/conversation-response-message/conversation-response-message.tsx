@@ -1,11 +1,16 @@
 import { ConversationResponseState } from "../../services/conversations";
 import { Flex, Timeline, Typography } from "antd";
+import { RightOutlined } from "@ant-design/icons";
 import { OutputTextEventData, ResponseEventType, ToolCallEventData } from "../../../worker/backend/types";
 import { useMCPContext } from "../../contexts/mcp-context";
 import ReactMarkdown from "react-markdown";
 import { useState } from "react";
 import { ToolCallDetailsDrawer } from "../tool-call-details-drawer";
 import "./conversation-response-message.scss";
+import remarkGfm from "remark-gfm";
+import remarkAttr from "remark-attr";
+import remarkParse from "remark-parse";
+import rehypeRaw from "rehype-raw";
 
 interface ConversationResponseMessageProps {
     state: ConversationResponseState;
@@ -91,6 +96,7 @@ export const ConversationResponseMessage = ({ state }: ConversationResponseMessa
 												onClick={() => handleToolCallClick(toolCallItem)}
 											>
 												<Typography.Text type="secondary">{toolCallItem.server}: {toolCallItem.toolName}</Typography.Text>
+												<RightOutlined style={{ marginLeft: 'auto', color: '#aaa' }} />
 											</Flex>
 										</Timeline.Item>
 									);
@@ -101,7 +107,9 @@ export const ConversationResponseMessage = ({ state }: ConversationResponseMessa
 						const item = group.item;
 						return (
 							<div key={item.itemId} className="markdown-content">
-								<ReactMarkdown>{state.outputs[item.itemId]?.text || ''}</ReactMarkdown>
+								<ReactMarkdown
+									rehypePlugins={[rehypeRaw]}
+								>{state.outputs[item.itemId]?.text || ''}</ReactMarkdown>
 							</div>
 						);
 					}

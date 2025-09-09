@@ -1,7 +1,8 @@
-import { auth, OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.js"
+import { OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.js"
 import type { MCPServerMetadata, OauthTokensWithExpiresAt } from '../types'
 import { OAuthClientInformation, OAuthClientInformationFull, OAuthClientMetadata, OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth.js";
 import { setToKV, getFromKV, deleteFromKV } from '../clients/kv-store';
+import { auth } from "./auth-flow";
 
 export class OauthProvider implements OAuthClientProvider {
 
@@ -13,16 +14,18 @@ export class OauthProvider implements OAuthClientProvider {
         private readonly saveClientInfo?: (clientInfo: OAuthClientInformationFull) => void) {
 		//
 		this._clientMetadata = {
-			redirect_uris: [this._redirectUrl],
+			redirect_uris: [
+				this._redirectUrl
+			],
 			token_endpoint_auth_method: 'client_secret_post',
 			grant_types: ['authorization_code', 'refresh_token'],
 			response_types: ['code'],
 			client_name: this.mcpServer.name,
-			client_uri: `https://chat.thoughtspot.app`,
+			scope: this.mcpServer.oauthClientInfo?.scope
 		};
 	}
 
-	get redirectUrl(): string | URL {
+	get redirectUrl(): string {
 		return this._redirectUrl;
 	}
 
@@ -44,11 +47,12 @@ export class OauthProvider implements OAuthClientProvider {
 	}
 
 	async codeVerifier(): Promise<string> {
+		console.log('codeVerifier', this.mcpServer.id + ':codeVerifier');
 		return await getFromKV(this.mcpServer.id + ':codeVerifier') as string;
 	}
 
-	clientInformation(): OAuthClientInformation | undefined {
-		return this.mcpServer.oauthClientInfo;
+	clientInformation(): OAuthClientInformationFull | undefined {
+		return this.mcpServer.oauthClientInfo as OAuthClientInformationFull;
 	}
 
 	async saveClientInformation(clientInformation: OAuthClientInformationFull): Promise<void> {
@@ -62,6 +66,7 @@ export class OauthProvider implements OAuthClientProvider {
 			const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
 			tokens.expires_at = expiresAt.valueOf();
 		}
+		console.log('saveTokens', this.mcpServer.id, tokens);
 		await setToKV(this.mcpServer.id, JSON.stringify(tokens));
 	}
 
@@ -70,13 +75,7 @@ export class OauthProvider implements OAuthClientProvider {
 	}
 
 	async saveCodeVerifier(codeVerifier: string): Promise<void> {
-		await setToKV(this.mcpServer.id + ':codeVerifier', codeVerifier, 60*5); // 5 minutes
-	}
-
-	async refreshAuth() {
-		return auth(this, {
-			serverUrl: new URL(this.mcpServer.url),
-		});
+		return setToKV(this.mcpServer.id + ':codeVerifier', codeVerifier, 60 * 5); // 5 minutes
 	}
 }
 

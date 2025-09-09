@@ -1,24 +1,20 @@
-import { AzureOpenAI } from "openai";
+import { OpenAI } from "openai";
 import { AIProvider, Attachment, MCPServerMetadataWithToken, ResponseEvent, ResponseEventType } from "../../types";
-import { MCPServer } from "../../mcp/mcp-server";
 import { ResponseInput, ResponseInputContent, ResponseOutputText, ResponseStreamEvent, Tool } from "openai/resources/responses/responses";
 import { systemPrompt } from "./system-prompt";
+import { enqueueFunctionCallResultsStream } from "./function-call";
 
 const apiKey = process.env.AZURE_OPENAI_KEY;
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
 const model = 'gpt-5-mini';
-const deployment = 'gpt-5-mini';
-const apiVersion = '2025-04-01-preview';
 
 export class OpenAIProvider implements AIProvider {
-	public client: AzureOpenAI;
+	public client: OpenAI;
 
 	constructor() {
-		this.client = new AzureOpenAI({
+		this.client = new OpenAI({
 			apiKey,
-			endpoint,
-			apiVersion,
-			deployment,
+			baseURL: endpoint,
 		});
 	}
 
@@ -46,11 +42,17 @@ export class OpenAIProvider implements AIProvider {
 			server_url: mcp.url,
 			require_approval: 'never',
 			allowed_tools: mcp.allowedTools,
+			headers: {
+				Authorization: `Bearer ${mcp.authorizationToken}`,
+			}
 		}));
 
 		if (enabledDefaultTools.includes("web-search")) {
 			tools.push({
-				type: "web_search",
+				type: "mcp",
+				server_label: "web-search",
+				require_approval: "never",
+				server_url: `https://mcp.exa.ai/mcp?exaApiKey=${process.env.EXA_API_KEY}`,
 			});
 		}
 
@@ -63,22 +65,25 @@ export class OpenAIProvider implements AIProvider {
 			});
 		}
 
+		if (enabledDefaultTools.includes("image-generation")) {
+			tools.push({
+				type: "image_generation",
+				partial_images: 3,
+			});
+		}
+
 		const responseStream = await this.client.responses.stream({
 			model,
 			previous_response_id: referenceId,
 			input: input,
-			tools: mcpServers.map(mcp => ({
-				type: "mcp",
-				server_label: mcp.name,
-				server_url: mcp.url,
-				require_approval: 'never',
-				allowed_tools: mcp.allowedTools,
-				headers: {
-					Authorization: `Bearer ${mcp.authorizationToken}`,
-				}
-			})),
+			reasoning: {
+				effort: 'low',
+			},
+			tools,
 		});
 		const ctx = this;
+		const functionCalls: any[] = [];
+		let responseId: string;
 		return new ReadableStream({
 			async start(controller) {
 				const encoder = new TextEncoder();
@@ -89,12 +94,23 @@ export class OpenAIProvider implements AIProvider {
 						if (json) {
 							controller.enqueue(encoder.encode(JSON.stringify(json) + "\n")); // NDJSON
 						}
+						if (event.type === "response.created") {
+							responseId = event.response.id;
+						}
+
+						if (event.type === "response.output_item.done"
+							&& event.item.type === "function_call") {
+							functionCalls.push(event.item);
+						}
 					}
-					controller.close();
+					if (functionCalls.length > 0) {
+						await enqueueFunctionCallResultsStream(functionCalls, controller, (input) => this.getResponseStream(input, attachments, mcpServers, enabledDefaultTools, responseId));
+					}
 				} catch (err: any) {
 					controller.enqueue(
 						encoder.encode(JSON.stringify({ type: "error", error: err.message }) + "\n")
 					);
+				} finally {
 					controller.close();
 				}
 			},
@@ -157,6 +173,17 @@ export class OpenAIProvider implements AIProvider {
 				}
 			}
 
+			if (event.item.type === "image_generation_call") {
+				return {
+					type: ResponseEventType.TOOL_CALL,
+					data: {
+						toolName: "Image generation",
+						itemId: event.item.id,
+						toolType: "image_generation"
+					}
+				}
+			}
+
 			if (event.item.type === "message") {
 				return {
 					type: ResponseEventType.OUTPUT_TEXT,
@@ -183,6 +210,16 @@ export class OpenAIProvider implements AIProvider {
 				data: {
 					itemId: event.item_id,
 					result: "Web search completed"
+				}
+			}
+		}
+
+		if (event.type === "response.image_generation_call.completed") {
+			return {
+				type: ResponseEventType.TOOL_CALL_RESULT,
+				data: {
+					itemId: event.item_id,
+					result: "Image generation completed"
 				}
 			}
 		}
@@ -244,6 +281,7 @@ export class OpenAIProvider implements AIProvider {
 				type: ResponseEventType.DONE,
 				data: {
 					responseId: event.response.id,
+					output: event.response.output,
 				}
 			}
 		}

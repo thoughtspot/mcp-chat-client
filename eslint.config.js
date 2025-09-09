@@ -25,7 +25,7 @@ export default tseslint.config([
 			'prefer-const': 'error',
 			'no-var': 'error',
 			'no-async-promise-executor': 'off',
-			'no-explicit-any': 'off',
+			'@typescript-eslint/no-explicit-any': 'off',
 		},
 	},
 ]);

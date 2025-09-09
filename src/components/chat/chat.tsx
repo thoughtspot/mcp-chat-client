@@ -1,4 +1,4 @@
-import { Card, Flex, message, Button, Spin } from "antd"
+import { Card, Flex, message, Button, Spin, Typography } from "antd"
 import { ChatInput } from "../chat-input/chat-input"
 import type { MCPResource } from "../../hooks"
 import { readMCPServerResource } from "../../services/mcp"
@@ -10,8 +10,9 @@ import { v7 as uuid } from 'uuid';
 import { ConversationResponseMessage } from "../conversation-response-message/conversation-response-message";
 import { TypingIndicator } from "../typing-indicator/typing-indicator";
 import { useSmartScroll } from "../../hooks/use-smart-scroll";
-import { DownOutlined } from "@ant-design/icons";
+import { ArrowDownOutlined, DownOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMCPContext } from "../../contexts/mcp-context";
+import { AddMCPModal } from "../mcp/add-mcp-modal";
 
 interface Message {
     role: 'user' | 'assistant';
@@ -26,7 +27,7 @@ interface ChatState {
 }
 
 export const Chat = ({ style }: { style?: React.CSSProperties }) => {
-	const { mcpServers, enabledDefaultTools } = useMCPContext();
+	const { mcpServers, enabledDefaultTools, fetchMCPServers } = useMCPContext();
 	const [chatState, setChatState] = useState<ChatState>({
 		messages: [],
 		selectedResources: [],
@@ -34,6 +35,7 @@ export const Chat = ({ style }: { style?: React.CSSProperties }) => {
 	const [pendingResources, setPendingResources] = useState<any[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [isReadResourceLoading, setIsReadResourceLoading] = useState(false);
+	const [isAddMCPModalOpen, setIsAddMCPModalOpen] = useState(false);
 
 	// Use the smart scroll hook
 	const { containerRef, handleScroll, shouldAutoScroll, scrollToBottom } = useSmartScroll({
@@ -119,23 +121,60 @@ export const Chat = ({ style }: { style?: React.CSSProperties }) => {
 			onScroll={handleScroll}
 		>
 			<Flex className="chat-messages-content" vertical gap={36} style={{ flex: "1 1 auto", minWidth: 600, maxWidth: 800, }}>
-				{chatState.messages.map((message) => (
-					message.role === 'user'
-						? <Card
-							size="small"
+				{chatState.messages.length === 0 ? (
+					// Welcome message when no messages
+					<Flex vertical align="center" justify="center" style={{ flex: 1, minHeight: 400 }}>
+						<Card
 							variant="borderless"
-							key={message.id}
-							style={{ whiteSpace: 'pre-wrap', textAlign: 'right', width: 'fit-content', alignSelf: 'flex-end' }}
-						>{message.content as string}</Card>
-						: <ConversationResponseMessage
-							key={message.id}
-							state={message.content as ConversationResponseState}
-						/>
-				))}
+							style={{
+								textAlign: 'center',
+								maxWidth: 500,
+								background: 'transparent',
+								border: 'none'
+							}}
+						>
+							<Typography.Title level={2} style={{ marginBottom: 16, }}>
+								Welcome to MCP Chat
+							</Typography.Title>
+							<Typography.Paragraph style={{ fontSize: 16, marginBottom: 24, color: '#666' }}>
+								I am the most generic and neutral AI agent on the internet! Connect with apps to expand my capabilities.
+							</Typography.Paragraph>
+							<Button
+								type={mcpServers.length === 0 ? "primary" : "default"}
+								size="large"
+								icon={<PlusOutlined />}
+								onClick={() => setIsAddMCPModalOpen(true)}
+								style={{ marginBottom: 16 }}
+							>
+								Add Connection
+							</Button>
+							<Typography.Text type="secondary" style={{ display: 'block' }}>
+								Connect with external tools and services to expand my capabilities. Or use one of the built-in tools.
+							</Typography.Text>
+						</Card>
+					</Flex>
+				) : (
+					// Regular messages
+					<>
+						{chatState.messages.map((message) => (
+							message.role === 'user'
+								? <Card
+									size="small"
+									variant="borderless"
+									key={message.id}
+									style={{ whiteSpace: 'pre-wrap', textAlign: 'right', width: 'fit-content', alignSelf: 'flex-end' }}
+								>{message.content as string}</Card>
+								: <ConversationResponseMessage
+									key={message.id}
+									state={message.content as ConversationResponseState}
+								/>
+						))}
 
-				{/* Show typing indicator when waiting for response */}
-				{loading && chatState.messages.length > 0 && (
-					<TypingIndicator />
+						{/* Show typing indicator when waiting for response */}
+						{loading && chatState.messages.length > 0 && (
+							<TypingIndicator />
+						)}
+					</>
 				)}
 			</Flex>
 		</Flex>
@@ -148,7 +187,7 @@ export const Chat = ({ style }: { style?: React.CSSProperties }) => {
 				<Button
 					shape="circle"
 					type="primary"
-					icon={<DownOutlined />}
+					icon={<ArrowDownOutlined />}
 					onClick={scrollToBottom}
 					style={{
 						boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
@@ -164,5 +203,15 @@ export const Chat = ({ style }: { style?: React.CSSProperties }) => {
 			</Spin>
 			<ChatInput onResourceSelect={handleResourceSelect} onSendMessage={handleSendMessage} inProgress={loading} />
 		</Flex>
+
+		{/* Add MCP Modal */}
+		<AddMCPModal
+			open={isAddMCPModalOpen}
+			onCancel={() => setIsAddMCPModalOpen(false)}
+			onAdd={() => {
+				setIsAddMCPModalOpen(false);
+				fetchMCPServers(); // Refresh the MCP servers list
+			}}
+		/>
 	</Flex>
 };

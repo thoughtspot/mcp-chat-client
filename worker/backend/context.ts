@@ -1,11 +1,12 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "./clients/supabase";
 import { MCPServers } from "./mcp/mcp-servers";
-import { decodeState, OauthProvider } from "./mcp/oauth";
+import { decodeState, OauthProvider } from "./mcp/oauth-provider";
 import { Attachment, MCPServerMetadata, MCPServerMetadataWithToken } from "./types";
 import { OpenAIProvider } from "./clients/ai/openai";
-import { MCPServer } from "./mcp/mcp-server";
 import { getConnector } from "./mcp/connectors";
+import { MCPServer } from "./mcp/mcp-server";
+import { MCPAuthError } from "./util";
 
 export class Context {
 	public supabaseClient: SupabaseClient;
@@ -28,7 +29,9 @@ export class Context {
 			name: connector.name,
 			url: connector.url,
 			logoUrl: connector.logo_url,
-			oauthClientInfo: connector.oauth_client_info
+			oauthClientInfo: connector.oauth_client_info,
+			oauthMetadata: connector.oauth_metadata,
+			transportType: connector.transport_type
 		});
 	}
 
@@ -50,6 +53,10 @@ export class Context {
 		const server = await this.mcpServers.get(serverId);
 		const resources = await server.listResources();
 		return resources;
+	}
+
+	async deleteMCPServer(serverId: string) {
+		return await this.mcpServers.delete(serverId);
 	}
 
 	async readMCPServerResource(serverId: string, resourceURI: string) {
@@ -85,15 +92,14 @@ export class Context {
 		const aiProvider = new OpenAIProvider();
 		const mcpServersWithToken: MCPServerMetadataWithToken[] = await Promise.all(
 			mcpServers.map(async metadata => {
-				const oauthClient = new OauthProvider(metadata);
-				let tokens = await oauthClient.tokens();
-				if (tokens.expires_at && tokens.expires_at < Date.now()) {
-					await oauthClient.refreshAuth();
-					tokens = await oauthClient.tokens();
+				const mcpServer = new MCPServer(metadata, this.redirectUrl);
+				const authResult = await mcpServer.auth();
+				if (authResult.authResult !== "AUTHORIZED") {
+					throw new MCPAuthError('Authorization failed');
 				}
 				return {
 					...metadata,
-					authorizationToken: tokens.access_token,
+					authorizationToken: authResult.tokens?.access_token,
 				};
 			})
 		);

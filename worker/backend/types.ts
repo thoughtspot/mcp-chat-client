@@ -1,13 +1,15 @@
-import type { OAuthClientInformation, OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth";
+import type { OAuthClientInformationFull, OAuthMetadata, OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth";
 
 export interface MCPServerMetadata {
     id: string;
     name: string;
     url: string;
     isConnected: boolean;
-    logoUrl?: string;
-    oauthClientInfo?: OAuthClientInformation;
-    allowedTools?: string[];
+	logoUrl?: string;
+	oauthClientInfo?: Partial<OAuthClientInformationFull>;
+	oauthMetadata?: OAuthMetadata;
+	allowedTools?: string[];
+	transportType?: string;
 }
 
 export interface MCPServerMetadataWithToken extends MCPServerMetadata {
@@ -79,6 +81,7 @@ export interface OutputTextEventData {
 
 export interface DoneEventData {
     responseId: string;
+    output: any;
 }
 
 // Discriminated union type for ResponseEvent

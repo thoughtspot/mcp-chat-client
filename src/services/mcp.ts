@@ -1,5 +1,5 @@
-import type { MCPServerMetadata } from "../../worker/backend/types";
-import { apiCall } from "./api-call";
+import { MCPServerMetadata, ResponseEvent, ResponseEventType } from "../../worker/backend/types";
+import { apiCall, readNDJSONStream } from "./api-call";
 
 export const listMCPServers = async (forceRefresh?: boolean) => {
 	const resp = await apiCall('/mcp/list', { method: 'GET' }, undefined);
@@ -13,6 +13,11 @@ export const listConnectors = async () => {
 
 export const addMCPServer = async (mcpServer: Partial<MCPServerMetadata>) => {
 	const resp = await apiCall('/mcp/add', { body: mcpServer });
+	return resp;
+}
+
+export const deleteMCPServer = async (serverId: string) => {
+	const resp = await apiCall(`/mcp/${serverId}`, { method: 'DELETE' });
 	return resp;
 }
 
@@ -42,4 +47,15 @@ export const connectMCPServer = async (serverId: string) => {
 
 export const finishMCPServerOAuth = async (code: string, state: string) => {
 	return apiCall('/mcp/oauth/callback', { body: { code, state } });
+}
+
+export const getToolSummary = async (serverName: string, toolName: string, args: any, result: any, onMessage: (message: string) => void) => {
+	const stream = await apiCall('/mcp/tools/call/summary', { body: { serverName, toolName, args, result } }, undefined, true);
+	let responseString = '';
+	for await (const event of readNDJSONStream(stream) as AsyncGenerator<ResponseEvent>) {
+		if (event.type === ResponseEventType.OUTPUT_TEXT_DELTA) {
+			responseString += event.data.delta;
+			onMessage(responseString);
+		}
+	}
 }

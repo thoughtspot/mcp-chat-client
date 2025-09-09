@@ -26,6 +26,10 @@
 		"react-markdown": "^10.1.0",
 		"react-router-dom": "^7.8.2",
 		"redis": "^5.8.2",
+		"rehype-raw": "^7.0.0",
+		"remark-attr": "^0.11.1",
+		"remark-gfm": "^4.0.1",
+		"remark-parse": "^11.0.0",
 		"sass-embedded": "^1.92.0",
 		"uuid": "^11.1.0"
 	},

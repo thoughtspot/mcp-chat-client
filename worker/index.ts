@@ -5,6 +5,7 @@ import { listConnectors } from './backend/mcp/connectors';
 import { MCPAuthError } from './backend/util';
 import checkAuth from './auth-middleware';
 import { initKV } from './backend/clients/kv-store';
+import { getToolSummary } from './backend/mcp/tool-summary';
 
 type ContextVariableMap = { Variables: { context: Context }, Bindings: Env };
 
@@ -102,6 +103,24 @@ app.get('/mcp/:serverId/resources/read', async c => {
 app.get('/mcp/connectors/list', async c => {
 	const connectors = await listConnectors(c.var.context.supabaseClient);
 	return c.json(connectors);
+});
+
+app.delete('/mcp/:serverId', async c => {
+	const serverId = c.req.param('serverId');
+	await c.var.context.deleteMCPServer(serverId);
+	return c.json({ success: true });
+});
+
+app.post('/mcp/tools/call/summary', async c => {
+	const { serverName, toolName, args, result } = await c.req.json();
+	const stream = await getToolSummary({ serverName, toolName, args, result }, c.var.context);
+	return new Response(stream, {
+		headers: {
+			'Content-Type': 'application/json; charset=utf-8',
+			'Transfer-Encoding': 'chunked',
+			Connection: 'keep-alive',
+		},
+	});
 });
 
 app.post('/conversations/create', async c => {
