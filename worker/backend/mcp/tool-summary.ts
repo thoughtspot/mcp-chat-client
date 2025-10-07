@@ -9,8 +9,8 @@ export const getToolSummary = async ({ serverName, toolName, args, result }: { s
 		Extract all images and frames from the result and put them as a collection in the below format:
 
 		<img src="image_url1" width="200" />
-		<iframe src="frame_url1" width="200" />
-		<img src="image_url2" width="500" height="600"/>
+		<iframe src="frame_url1" width="500" height="600" />
+		<img src="image_url2" width="200" />
 		<iframe src="frame_url2" width="500" height="600"/>
 		...
 

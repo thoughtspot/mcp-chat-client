@@ -1,4 +1,4 @@
-import { MCPServerMetadata, ResponseEvent, ResponseEventType } from "../../worker/backend/types";
+import {  MCPServerMetadataWithToken, ResponseEvent, ResponseEventType } from "../../worker/backend/types";
 import { apiCall, readNDJSONStream } from "./api-call";
 
 export const listMCPServers = async (forceRefresh?: boolean) => {
@@ -11,7 +11,7 @@ export const listConnectors = async () => {
 	return resp;
 }
 
-export const addMCPServer = async (mcpServer: Partial<MCPServerMetadata>) => {
+export const addMCPServer = async (mcpServer: Partial<MCPServerMetadataWithToken>) => {
 	const resp = await apiCall('/mcp/add', { body: mcpServer });
 	return resp;
 }

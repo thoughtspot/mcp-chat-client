@@ -1,4 +1,4 @@
-import { Card, Form, Input, Modal, Space, Tabs, Typography, Flex, Button, Divider, message, Spin } from "antd"
+import { Card, Form, Input, Modal, Space, Tabs, Typography, Flex, Button, Divider, message, Spin, Select } from "antd"
 import { PlusOutlined } from "@ant-design/icons"
 import { useState, useEffect } from "react"
 import { addMCPServer, listConnectors, addMCPFromConnector } from "../../services/mcp"
@@ -18,6 +18,7 @@ export const AddMCPModal = ({ open, onCancel, onAdd }: { open: boolean, onCancel
 	const [loading, setLoading] = useState(false)
 	const [connectors, setConnectors] = useState<Connector[]>([])
 	const [connectorsLoading, setConnectorsLoading] = useState(false)
+	const authType = Form.useWatch('authType', form)
 
 	// Fetch connectors when modal opens
 	useEffect(() => {
@@ -46,10 +47,12 @@ export const AddMCPModal = ({ open, onCancel, onAdd }: { open: boolean, onCancel
 				name: values.name,
 				url: values.url,
 				logoUrl: values.logoUrl,
+				authType: values.authType,
 				oauthClientInfo: values.clientId || values.clientSecret ? {
 					client_id: values.clientId,
 					client_secret: values.clientSecret
-				} : undefined
+				} : undefined,
+				authorizationToken: values.authorizationToken
 			})
 			message.success('MCP Server added successfully!')
 			onAdd();
@@ -90,7 +93,7 @@ export const AddMCPModal = ({ open, onCancel, onAdd }: { open: boolean, onCancel
 		centered
 	>
 		<Spin spinning={loading}>
-			<Tabs style={{ height: '470px'}}>
+			<Tabs style={{ height: '530px'}}>
 				<Tabs.TabPane tab="Connectors" key="connectors">
 					{connectorsLoading ? (
 						<Flex justify="center" align="center" style={{ height: 200 }}>
@@ -131,12 +134,13 @@ export const AddMCPModal = ({ open, onCancel, onAdd }: { open: boolean, onCancel
 						</Flex>
 					)}
 				</Tabs.TabPane>
-				<Tabs.TabPane tab="Custom" key="custom">
+				<Tabs.TabPane tab="Custom" key="custom" style={{ height: '100%' }}>
 					<Form
 						form={form}
 						labelCol={{ span: 6 }}
 						wrapperCol={{ span: 18 }}
 						onFinish={handleSubmit}
+						initialValues={{ authType: 'oauth' }}
 					>
 						<Form.Item required label="Name" name="name" tooltip="The name of the MCP server">
 							<Input />
@@ -147,16 +151,30 @@ export const AddMCPModal = ({ open, onCancel, onAdd }: { open: boolean, onCancel
 						<Form.Item label="Logo URL" name="logoUrl" tooltip="The URL of the MCP server logo">
 							<Input />
 						</Form.Item>
-						<Divider />
-						<div style={{ marginBottom: 24 }}>
-							<Typography.Text type="secondary">Advanced</Typography.Text>
-						</div>
-						<Form.Item label="Oauth Client ID" name="clientId" tooltip="The client ID of the MCP server">
-							<Input placeholder="Enter client ID" />
+						<Form.Item label="Auth Type" name="authType" tooltip="The type of authentication for the MCP server">
+							<Select options={[{ label: 'OAuth', value: 'oauth' }, { label: 'Authorization Token', value: 'authorizationToken' }]} />
 						</Form.Item>
-						<Form.Item label="Client Secret" name="clientSecret" tooltip="The client secret of the MCP server">
-							<Input placeholder="Enter client secret" />
-						</Form.Item>
+						{authType === 'oauth' && (
+							<>
+								<Divider />
+								<div style={{ marginBottom: 24 }}>
+									<Typography.Text type="secondary">Advanced</Typography.Text>
+								</div>
+								<Form.Item label="Oauth Client ID" name="clientId" tooltip="The client ID of the MCP server">
+									<Input placeholder="Enter client ID" />
+								</Form.Item>
+								<Form.Item label="Client Secret" name="clientSecret" tooltip="The client secret of the MCP server">
+									<Input placeholder="Enter client secret" />
+								</Form.Item>
+							</>
+						)}
+						{authType === 'authorizationToken' && (
+							<>
+								<Form.Item label="Token" name="authorizationToken" tooltip="The authorization token of the MCP server">
+									<Input placeholder="Enter authorization token" />
+								</Form.Item>
+							</>
+						)}
 						<div style={{ textAlign: 'right' }}>
 							<Button
 								style={{ marginTop: 24 }}

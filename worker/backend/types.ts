@@ -10,6 +10,7 @@ export interface MCPServerMetadata {
 	oauthMetadata?: OAuthMetadata;
 	allowedTools?: string[];
 	transportType?: string;
+	authType?: 'oauth' | 'authorizationToken';
 }
 
 export interface MCPServerMetadataWithToken extends MCPServerMetadata {

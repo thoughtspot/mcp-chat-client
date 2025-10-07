@@ -35,7 +35,9 @@ const contextMiddleware = createMiddleware<ContextVariableMap>(async (c, next) =
 const app = new Hono<ContextVariableMap>().basePath('/api');
 app.use(contextMiddleware);
 
-app.get('/', c => c.text('Hello World'));
+app.get('/', c => {
+	return c.text('Hello World');
+});
 
 app.post('/test', async c => {
 	const body = await c.req.json();

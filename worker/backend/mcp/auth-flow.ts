@@ -16,6 +16,7 @@ export async function auth(
 	options: {
 		metadata?: OAuthMetadata;
 		serverUrl: string | URL;
+		authType?: 'oauth' | 'authorizationToken';
 		authorizationCode?: string;
 		scope?: string;
 		resourceMetadataUrl?: URL;
@@ -41,12 +42,14 @@ export async function auth(
 async function authInternal(
 	provider: OAuthClientProvider,
 	{ serverUrl,
+		authType,
 		metadata,
 		authorizationCode,
 		scope,
 		fetchFn,
 	}: {
     serverUrl: string | URL;
+	authType?: 'oauth' | 'authorizationToken';
 	metadata?: OAuthMetadata;
     authorizationCode?: string;
     scope?: string;
@@ -54,6 +57,15 @@ async function authInternal(
     fetchFn?: FetchLike;
   },
 ): Promise<{authResult: AuthResult, tokens?: OauthTokensWithExpiresAt }> {
+
+
+	if (authType === 'authorizationToken') {
+		const tokens = await provider.tokens();
+		if (tokens.access_token) {
+			return { authResult: "AUTHORIZED", tokens };
+		}
+		throw new Error('Authorization token not found for Auth Type Authorization Token');
+	}
 
 	let authorizationServerUrl: string | URL | undefined;
 

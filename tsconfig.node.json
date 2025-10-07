@@ -11,6 +11,7 @@
 		"allowImportingTsExtensions": true,
 		"moduleDetection": "force",
 		"noEmit": true,
+		"sourceMap": true,
 
 		/* Linting */
 		"strict": false,

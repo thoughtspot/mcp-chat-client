@@ -19,7 +19,7 @@ export class Context {
 		this.mcpServers = new MCPServers(this.supabaseClient, this.redirectUrl);
 	}
 
-	async addMCPServer(mcpServer: MCPServerMetadata) {
+	async addMCPServer(mcpServer: MCPServerMetadataWithToken) {
 		return this.mcpServers.upsert(mcpServer);
 	}
 

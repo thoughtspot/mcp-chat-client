@@ -64,6 +64,7 @@ export class MCPServer {
 			const authResult = await auth(this.oauthProvider, {
 				serverUrl: new URL(this.metadata.url),
 				metadata: this.metadata.oauthMetadata,
+				authType: this.metadata.authType,
 			})
 			return authResult;
 		} catch (error) {
