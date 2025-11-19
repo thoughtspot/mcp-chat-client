@@ -1,8 +1,12 @@
+import mime from 'mime';
 import { OpenAI } from "openai";
 import { AIProvider, Attachment, MCPServerMetadataWithToken, ResponseEvent, ResponseEventType } from "../../types";
 import { ResponseInput, ResponseInputContent, ResponseOutputText, ResponseStreamEvent, Tool } from "openai/resources/responses/responses";
 import { systemPrompt } from "./system-prompt";
 import { enqueueFunctionCallResultsStream } from "./function-call";
+import { FileRetrieveResponse } from "openai/resources/containers/files/files";
+import { FileObject } from "openai/resources/files";
+
 
 const apiKey = process.env.AZURE_OPENAI_KEY;
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
@@ -117,6 +121,29 @@ export class OpenAIProvider implements AIProvider {
 		});
 	}
 
+	async getFileFromContainer(containerId: string, fileId: string): Promise<{ fileMeta: FileObject, mimeType: string, buffer: Buffer }> {
+		const [fileMeta, fileContent] = await Promise.all([
+			this.client.files.retrieve(fileId, {
+				headers: {
+					'OpenAI-Container-Id': containerId,
+				}
+			}),
+			this.client.files.content(fileId, {
+				headers: {
+					'OpenAI-Container-Id': containerId,
+				}
+			})
+		]);
+		const fileExtension = fileMeta.filename.split('.').pop().toLowerCase();
+		const mimeType = mime.getType(fileExtension) || 'application/octet-stream';
+		const buffer = Buffer.from(await fileContent.arrayBuffer());
+		return {
+			fileMeta,
+			mimeType,
+			buffer,
+		}
+	}
+
 	private getInputContentFromAttachments(attachments: Attachment[]): ResponseInputContent[] {
 		return attachments.map(attachment => {
 			if (attachment.mimeType === 'text/plain') {
@@ -129,6 +156,7 @@ export class OpenAIProvider implements AIProvider {
 	}
 
 	private getKnownEvent(event: ResponseStreamEvent): ResponseEvent {
+		console.log('event', event);
 		if (event.type === "response.created") {
 			return {
 				type: ResponseEventType.START,

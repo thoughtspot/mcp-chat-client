@@ -43,17 +43,20 @@ export class MCPServers {
 			throw error;
 		}
 
+		const mcpServerMetadata = convertToCamelCaseObjectKeys(data[0]) as unknown as MCPServerMetadata;
 		if (mcpServer.authType === 'authorizationToken') {
 			if (!authorizationToken) {
 				throw new Error('Authorization token is required');
 			}
-			const mcpServerMetadata = convertToCamelCaseObjectKeys(data[0]) as unknown as MCPServerMetadata;
 			const oauthProvider = new OauthProvider(mcpServerMetadata, this.redirectUrl);
 			await oauthProvider.saveTokens({
 				access_token: authorizationToken,
 				expires_in: 3600 * 24 * 30 * 6, // 6 months
 				token_type: 'Bearer',
 			});
+			await this.setIsConnected(mcpServerMetadata.id, true);
+		}
+		if (mcpServer.authType === 'none') {
 			await this.setIsConnected(mcpServerMetadata.id, true);
 		}
 		return data;

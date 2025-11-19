@@ -152,7 +152,7 @@ export const AddMCPModal = ({ open, onCancel, onAdd }: { open: boolean, onCancel
 							<Input />
 						</Form.Item>
 						<Form.Item label="Auth Type" name="authType" tooltip="The type of authentication for the MCP server">
-							<Select options={[{ label: 'OAuth', value: 'oauth' }, { label: 'Authorization Token', value: 'authorizationToken' }]} />
+							<Select options={[{ label: 'OAuth', value: 'oauth' }, { label: 'Authorization Token', value: 'authorizationToken' }, { label: 'None', value: 'none' }]} />
 						</Form.Item>
 						{authType === 'oauth' && (
 							<>

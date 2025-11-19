@@ -10,11 +10,11 @@ export interface MCPServerMetadata {
 	oauthMetadata?: OAuthMetadata;
 	allowedTools?: string[];
 	transportType?: string;
-	authType?: 'oauth' | 'authorizationToken';
+	authType?: 'oauth' | 'authorizationToken' | 'none';
 }
 
 export interface MCPServerMetadataWithToken extends MCPServerMetadata {
-    authorizationToken: string;
+    authorizationToken?: string;
 }
 
 export type Attachment = {

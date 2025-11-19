@@ -148,6 +148,18 @@ app.post('/conversations/send', async c => {
 	});
 });
 
+app.get('/conversations/files/:containerId/:fileId', async c => {
+	const containerId = c.req.param('containerId');
+	const fileId = c.req.param('fileId');
+	const file = await c.var.context.getFileFromContainer(containerId, fileId);
+	return new Response(file.buffer, {
+		headers: {
+			'Content-Type': file.mimeType,
+			'Content-Disposition': `attachment; filename="${file.fileMeta.filename}"`,
+		},
+	});
+});
+
 app.post('/conversations/list', async c => {
 	// List the conversations for the current user
 });

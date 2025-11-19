@@ -16,7 +16,7 @@ export async function auth(
 	options: {
 		metadata?: OAuthMetadata;
 		serverUrl: string | URL;
-		authType?: 'oauth' | 'authorizationToken';
+		authType?: 'oauth' | 'authorizationToken' | 'none';
 		authorizationCode?: string;
 		scope?: string;
 		resourceMetadataUrl?: URL;
@@ -49,7 +49,7 @@ async function authInternal(
 		fetchFn,
 	}: {
     serverUrl: string | URL;
-	authType?: 'oauth' | 'authorizationToken';
+	authType?: 'oauth' | 'authorizationToken' | 'none';
 	metadata?: OAuthMetadata;
     authorizationCode?: string;
     scope?: string;
@@ -64,7 +64,10 @@ async function authInternal(
 		if (tokens.access_token) {
 			return { authResult: "AUTHORIZED", tokens };
 		}
+
 		throw new Error('Authorization token not found for Auth Type Authorization Token');
+	} else if (authType === 'none') {
+		return { authResult: "AUTHORIZED", tokens: undefined };
 	}
 
 	let authorizationServerUrl: string | URL | undefined;

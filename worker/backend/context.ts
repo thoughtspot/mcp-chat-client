@@ -107,4 +107,9 @@ export class Context {
 			message, attachments, mcpServersWithToken, enabledDefaultTools, referenceId
 		);
 	}
+
+	async getFileFromContainer(containerId: string, fileId: string) {
+		const aiProvider = new OpenAIProvider();
+		return await aiProvider.getFileFromContainer(containerId, fileId);
+	}
 }

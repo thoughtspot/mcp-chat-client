@@ -37,15 +37,15 @@ export class MCPServer {
 				throw new MCPAuthError('Authorization failed');
 			}
 
-			const tokens = authResult.tokens;
-			const Transport = this.getTransportClass();
-			const transport = new Transport(new URL(this.metadata.url), {
-				requestInit: {
-					headers: {
-						Authorization: `Bearer ${tokens.access_token}`,
-					},
-				}
-			});
+		const tokens = authResult.tokens;
+		const Transport = this.getTransportClass();
+		const transport = new Transport(new URL(this.metadata.url), {
+			requestInit: tokens ? {
+				headers: {
+					Authorization: `Bearer ${tokens.access_token}`,
+				},
+			} : undefined
+		});
 
 			await this.client.connect(transport);
 			await this.onConnect?.();

@@ -66,7 +66,6 @@ export class OauthProvider implements OAuthClientProvider {
 			const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
 			tokens.expires_at = expiresAt.valueOf();
 		}
-		console.log('saveTokens', this.mcpServer.id, tokens);
 		await setToKV(this.mcpServer.id, JSON.stringify(tokens));
 	}
 
