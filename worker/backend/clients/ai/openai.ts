@@ -40,16 +40,21 @@ export class OpenAIProvider implements AIProvider {
 			});
 		}
 
-		const tools: Tool[] = mcpServers.map(mcp => ({
-			type: "mcp",
-			server_label: mcp.name,
-			server_url: mcp.url,
-			require_approval: 'never',
-			allowed_tools: mcp.allowedTools,
-			headers: {
-				Authorization: `Bearer ${mcp.authorizationToken}`,
+		const tools: Tool[] = mcpServers.map(mcp => {
+			let mcpTool: any = {
+				type: "mcp",
+				server_label: mcp.name,
+				server_url: mcp.url,
+				require_approval: 'never',
+				allowed_tools: mcp.allowedTools,
 			}
-		}));
+			if (mcp.authorizationToken) {
+				mcpTool.headers = {
+					Authorization: `Bearer ${mcp.authorizationToken}`,
+				}
+			}
+			return mcpTool;
+		});
 
 		if (enabledDefaultTools.includes("web-search")) {
 			tools.push({

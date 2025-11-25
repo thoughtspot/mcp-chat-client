@@ -123,7 +123,7 @@ export const ChatInput = ({ onResourceSelect, onSendMessage, inProgress }: ChatI
 			<Space.Compact style={{ width: '100%' }}>
 				<Input
 					addonBefore={
-						<>
+						<div style={{ position: 'relative', display: 'inline-flex' }}>
 							<Dropdown menu={{ items: menuItems }} trigger={['click']} placement="topLeft" disabled={isUploading}>
 								{isUploading ? (
 									<LoadingOutlined style={{ cursor: 'default' }} />
@@ -136,9 +136,17 @@ export const ChatInput = ({ onResourceSelect, onSendMessage, inProgress }: ChatI
 								open={isResourceDropdownOpen}
 								onOpenChange={setIsResourceDropdownOpen}
 							>
-								<span style={{ display: 'none' }} />
+								<span style={{
+									position: 'absolute',
+									left: '50%',
+									top: '50%',
+									width: 1,
+									height: 1,
+									visibility: 'hidden',
+									pointerEvents: 'none'
+								}} />
 							</MCPResourcesDropdown>
-						</>
+						</div>
 					}
 					value={inputValue}
 					onChange={(e) => setInputValue(e.target.value)}
