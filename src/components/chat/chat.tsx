@@ -69,7 +69,7 @@ export const Chat = ({ style }: { style?: React.CSSProperties }) => {
 		setPendingResources(pendingResources.filter(r => r.uri !== resource.uri));
 	};
 
-	const handleSendMessage = async (text: string) => {
+	const handleSendMessage = async (text: string, fileAttachments: any[] = []) => {
 		if (loading) {
 			abortRequest('sendMessage');
 		}
@@ -86,7 +86,10 @@ export const Chat = ({ style }: { style?: React.CSSProperties }) => {
 			const availableMcpServers = mcpServers
 				.filter(server => server.isConnected)
 
-			await sendMessage(text, pendingResources, availableMcpServers, enabledDefaultTools, chatState.referenceId, (state: ConversationResponseState, isStart: boolean) => {
+			// Combine pending resources and file attachments
+			const allAttachments = [...pendingResources, ...fileAttachments];
+
+			await sendMessage(text, allAttachments, availableMcpServers, enabledDefaultTools, chatState.referenceId, (state: ConversationResponseState, isStart: boolean) => {
 				if (isStart) {
 					setChatState(prevState => ({
 						...prevState,

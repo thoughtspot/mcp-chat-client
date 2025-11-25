@@ -68,3 +68,10 @@ export const sendMessage = async (message: string, attachments: Attachment[], mc
 	}
 }
 
+
+export const uploadFile = async (file: File) => {
+	const formData = new FormData();
+	formData.append('file', file);
+	const fileMeta = await apiCall('/conversations/files/upload', { body: formData }, 'uploadFile');
+	return fileMeta;
+}

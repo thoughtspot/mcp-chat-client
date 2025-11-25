@@ -144,8 +144,21 @@ export class OpenAIProvider implements AIProvider {
 		}
 	}
 
+	async uploadFile(file: File): Promise<FileObject> {
+		return await this.client.files.create({
+			file: file,
+			purpose: 'assistants'
+		});
+	}
+
 	private getInputContentFromAttachments(attachments: Attachment[]): ResponseInputContent[] {
 		return attachments.map(attachment => {
+			if (attachment.file_id) {
+				return {
+					type: "input_file",
+					file_id: attachment.file_id,
+				}
+			}
 			if (attachment.mimeType === 'text/plain') {
 				return {
 					type: "input_text",

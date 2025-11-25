@@ -9,30 +9,37 @@ const { Text } = Typography;
 interface MCPResourcesDropdownProps {
     onResourceSelect?: (serverId: string, resource: MCPResource) => void;
     children: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
 export const MCPResourcesDropdown: React.FC<MCPResourcesDropdownProps> = ({
     onResourceSelect,
-    children
+    children,
+    open: controlledOpen,
+    onOpenChange
 }) => {
     const { serversWithResources, loading, error } = useMCPResources();
     const [searchText, setSearchText] = useState('');
     const [selectedServer, setSelectedServer] = useState<string>('all');
-    const [open, setOpen] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
+
+    const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+    const setOpen = onOpenChange || setInternalOpen;
 
     // Create server options for the select component
     const serverOptions = useMemo(() => {
         const options = [
             { value: 'all', label: 'All' }
         ];
-        
+
         serversWithResources.forEach(server => {
             options.push({
                 value: server.id,
                 label: server.name
             });
         });
-        
+
         return options;
     }, [serversWithResources]);
 
@@ -118,8 +125,8 @@ export const MCPResourcesDropdown: React.FC<MCPResourcesDropdownProps> = ({
         return (
             <Flex vertical gap={8} style={{ width: '450px', height: '500px' }}>
                 {/* Server selection and search bar row */}
-                <div style={{ 
-                    padding: '12px', 
+                <div style={{
+                    padding: '12px',
                     borderBottom: '1px solid #303030',
                     display: 'flex',
                     gap: '8px',
@@ -137,7 +144,7 @@ export const MCPResourcesDropdown: React.FC<MCPResourcesDropdownProps> = ({
                             </Select.Option>
                         ))}
                     </Select>
-                    
+
                     <Input
                         placeholder="Search resources..."
                         prefix={<SearchOutlined />}
@@ -146,7 +153,7 @@ export const MCPResourcesDropdown: React.FC<MCPResourcesDropdownProps> = ({
                         style={{ flex: 1 }}
                     />
                 </div>
-                
+
                 {/* Flat resources list */}
                 <div style={{ height: '100%', overflowY: 'auto' }}>
                     <List
@@ -155,7 +162,7 @@ export const MCPResourcesDropdown: React.FC<MCPResourcesDropdownProps> = ({
                         renderItem={(item) => (
                             <List.Item
                                 className="mcp-resources-dropdown-item"
-                                style={{ 
+                                style={{
                                     padding: '8px 12px',
                                     cursor: 'pointer',
                                     borderBottom: '1px solid #303030'
@@ -168,10 +175,10 @@ export const MCPResourcesDropdown: React.FC<MCPResourcesDropdownProps> = ({
                                             {item.resource.name || item.resource.uri.split('/').pop()}
                                         </Text>
                                         {selectedServer === 'all' && (
-                                            <Text 
-                                                type="secondary" 
-                                                style={{ 
-                                                    fontSize: '10px', 
+                                            <Text
+                                                type="secondary"
+                                                style={{
+                                                    fontSize: '10px',
                                                     padding: '1px 6px',
                                                     borderRadius: '4px',
                                                     marginLeft: 'auto'
@@ -183,7 +190,7 @@ export const MCPResourcesDropdown: React.FC<MCPResourcesDropdownProps> = ({
                                     </div>
                                     {item.resource.description && (
                                         <div>
-                                            <Typography.Paragraph type="secondary" 
+                                            <Typography.Paragraph type="secondary"
                                             style={{ fontSize: '11px', maxWidth: '320px' }} ellipsis={{ tooltip: item.resource.description, rows: 2 }}>
                                                 {item.resource.description}
                                             </Typography.Paragraph>

@@ -18,11 +18,12 @@ export interface MCPServerMetadataWithToken extends MCPServerMetadata {
 }
 
 export type Attachment = {
-    mimeType: string;
+    mimeType?: string;
     image_url?: string;
     text?: string;
     filename?: string;
-    file_data?: string;
+	file_data?: string;
+	file_id?: string;
 }
 
 export type OauthTokensWithExpiresAt = OAuthTokens & { expires_at?: number };

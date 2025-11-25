@@ -7,6 +7,7 @@ import { OpenAIProvider } from "./clients/ai/openai";
 import { getConnector } from "./mcp/connectors";
 import { MCPServer } from "./mcp/mcp-server";
 import { MCPAuthError } from "./util";
+import { FileObject } from "openai/resources/files";
 
 export class Context {
 	public supabaseClient: SupabaseClient;
@@ -111,5 +112,10 @@ export class Context {
 	async getFileFromContainer(containerId: string, fileId: string) {
 		const aiProvider = new OpenAIProvider();
 		return await aiProvider.getFileFromContainer(containerId, fileId);
+	}
+
+	async uploadFile(file: File): Promise<FileObject> {
+		const aiProvider = new OpenAIProvider();
+		return await aiProvider.uploadFile(file);
 	}
 }

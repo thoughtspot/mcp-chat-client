@@ -24,17 +24,24 @@ export const apiCall = async (path, payload: any = {}, cancelId?, stream?: boole
 
     path = path.startsWith('/') ? path : `/${path}`;
     const url = `/api${path}`;
-    const { body, ...payloadWithoutBody } = payload;
+	let { body, ...payloadWithoutBodyAndHeaders } = payload;
+	if (body && !(body instanceof FormData)) {
+		body = JSON.stringify(body);
+	}
+
+	let headers = {
+		Authorization: `Bearer ${token}`,
+	};
+	if (!(body instanceof FormData)) {
+		headers['content-type'] = 'application/json';
+	}
 
     const resp = await fetch(url, {
-        body: body ? JSON.stringify(body) : undefined,
+        body,
         method: 'POST',
-        headers: {
-            'content-type': 'application/json',
-            Authorization: `Bearer ${token}`
-        },
+        headers,
         signal,
-        ...payloadWithoutBody,
+        ...payloadWithoutBodyAndHeaders,
     });
 
     if (!resp.ok) {

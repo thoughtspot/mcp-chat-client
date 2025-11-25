@@ -160,6 +160,12 @@ app.get('/conversations/files/:containerId/:fileId', async c => {
 	});
 });
 
+app.post('/conversations/files/upload', async c => {
+	const body = await c.req.parseBody();
+	const fileMeta = await c.var.context.uploadFile(body.file as File);
+	return c.json(fileMeta);
+});
+
 app.post('/conversations/list', async c => {
 	// List the conversations for the current user
 });
