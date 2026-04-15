@@ -18,7 +18,7 @@
 		"@modelcontextprotocol/sdk": "^1.17.5",
 		"@supabase/supabase-js": "^2.57.0",
 		"antd": "^5.27.2",
-		"hono": "^4.9.5",
+		"hono": "^4.12.12",
 		"lodash": "^4.17.21",
 		"mime": "^4.1.0",
 		"openai": "^5.18.1",
